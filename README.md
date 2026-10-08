@@ -8,7 +8,7 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the product plan, data contracts and rele
 | Path | Contents |
 |---|---|
 | `packages/core` | Pure TypeScript domain logic shared by every platform: quantity/unit resolution, nutrient totals, estimated consumption cost, calorie/macro target estimates, input schemas |
-| `apps/mobile` | Expo app (iOS, Android, web): sign-in, onboarding, targets, Today |
+| `apps/mobile` | Expo app (iOS, Android, web): sign-in, onboarding, targets, Today, custom foods and prices |
 | `supabase/migrations` | Postgres schema with row-level security (ownership model in `docs/PLAN.md` §4) |
 | `supabase/tests/database` | pgTAP tests for access rules and data integrity |
 
