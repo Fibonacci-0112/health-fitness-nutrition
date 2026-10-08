@@ -440,3 +440,5 @@ web-build/
 !/packages/
 !/packages/**
 packages/**/node_modules/
+playwright-report/
+test-results/
