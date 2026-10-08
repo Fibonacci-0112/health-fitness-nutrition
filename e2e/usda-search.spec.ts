@@ -44,7 +44,7 @@ async function stubUsdaFunction(page: Page) {
 async function openOatBranBread(page: Page) {
   await page.getByRole("tab", { name: "Foods" }).click();
   await page.getByRole("button", { name: "Search USDA foods" }).click();
-  await page.getByLabel("Search USDA foods").fill("oats");
+  await page.getByRole("textbox", { name: "Search USDA foods" }).fill("oats");
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByText("5 matches", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Rolled Oats, Malt O Meal" })).toBeVisible();
