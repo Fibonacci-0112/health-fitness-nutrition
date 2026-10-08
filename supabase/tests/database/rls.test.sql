@@ -3,7 +3,7 @@
 -- and reference B's private records. Everything here is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(49);
+select plan(53);
 
 -- Runs a statement and returns the number of rows it affected (RLS filters
 -- UPDATE/DELETE silently, so "0 rows" is the expected denial).
@@ -61,6 +61,12 @@ values ('00000000-0000-0000-0000-00000000000b', '2026-10-08', 'complete');
 set constraints all immediate;
 
 select is((select count(*) from public.profiles), 2::bigint, 'a profile is created for every new auth user');
+
+-- Security-definer functions are not reachable through the API.
+select ok(not has_function_privilege('anon', 'public.handle_new_user()', 'execute'), 'anon cannot call the signup trigger function');
+select ok(not has_function_privilege('authenticated', 'public.handle_new_user()', 'execute'), 'users cannot call the signup trigger function');
+select is(to_regprocedure('public.can_see_food(uuid)'), null, 'policy helpers are not in the exposed public schema');
+select ok(not has_function_privilege('anon', 'private.can_see_food(uuid)', 'execute'), 'anon cannot call policy helpers');
 
 -- ---------------------------------------------------------------------------
 -- As user A
