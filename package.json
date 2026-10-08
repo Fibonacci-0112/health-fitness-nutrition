@@ -8,7 +8,8 @@
     "typecheck": "tsc -p packages/core --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:test:local": "scripts/db-test-local.sh"
   },
   "engines": {
     "node": ">=20"
