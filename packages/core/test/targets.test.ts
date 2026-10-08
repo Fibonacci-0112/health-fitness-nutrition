@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bmrMifflinStJeor, estimateTargets, planGoal } from "../src";
+import { bmrMifflinStJeor, estimateTargets, planGoal, proposeTargets } from "../src";
 
 describe("bmrMifflinStJeor", () => {
   it("matches hand-computed values", () => {
@@ -80,5 +80,41 @@ describe("planGoal", () => {
       .toEqual({ ok: false, error: "INVALID_INPUT" });
     expect(planGoal({ currentWeightKg: 90, goalWeightKg: 80, today: "2026-01-01", mode: { kind: "date", targetDate: "2026-02-30" } }))
       .toEqual({ ok: false, error: "INVALID_INPUT" });
+  });
+});
+
+describe("proposeTargets", () => {
+  const profile = { sex: "male" as const, birthDate: "1996-01-01", heightCm: 180, activity: "moderate" as const };
+
+  it("combines profile, weight and goal", () => {
+    const p = proposeTargets({
+      profile, currentWeightKg: 80, goalWeightKg: 75, today: "2026-06-01", mode: { kind: "rate", kgPerWeek: 0.5 },
+    });
+    expect(p.ok).toBe(true);
+    if (!p.ok) return;
+    expect(p.ageYears).toBe(30);
+    expect(p.plan.kgPerWeek).toBeCloseTo(-0.5);
+    expect(p.estimate.kcal).toBe(2209);
+  });
+
+  it("names the missing profile fields", () => {
+    const p = proposeTargets({
+      profile: { ...profile, heightCm: null, activity: null }, currentWeightKg: 80, goalWeightKg: 75,
+      today: "2026-06-01", mode: { kind: "rate", kgPerWeek: 0.5 },
+    });
+    expect(p).toEqual({ ok: false, error: "PROFILE_INCOMPLETE", missing: ["heightCm", "activity"] });
+  });
+
+  it("requires a current weight", () => {
+    const p = proposeTargets({ profile, currentWeightKg: null, goalWeightKg: 75, today: "2026-06-01", mode: { kind: "rate", kgPerWeek: 0.5 } });
+    expect(p).toEqual({ ok: false, error: "NO_CURRENT_WEIGHT" });
+  });
+
+  it("passes the calorie floor through", () => {
+    const p = proposeTargets({
+      profile: { ...profile, calorieFloorKcal: 2500 }, currentWeightKg: 80, goalWeightKg: 75,
+      today: "2026-06-01", mode: { kind: "rate", kgPerWeek: 0.5 },
+    });
+    expect(p.ok && p.estimate.kcal).toBe(2500);
   });
 });

@@ -8,10 +8,11 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the product plan, data contracts and rele
 | Path | Contents |
 |---|---|
 | `packages/core` | Pure TypeScript domain logic shared by every platform: quantity/unit resolution, nutrient totals, estimated consumption cost, calorie/macro target estimates, input schemas |
+| `apps/mobile` | Expo app (iOS, Android, web): sign-in, onboarding, targets, Today |
 | `supabase/migrations` | Postgres schema with row-level security (ownership model in `docs/PLAN.md` §4) |
 | `supabase/tests/database` | pgTAP tests for access rules and data integrity |
 
-The Expo app and Electron shell arrive in later PRs (see the plan).
+The Electron shell arrives in a later PR (see the plan).
 
 ## Development
 
@@ -23,6 +24,30 @@ npm test
 ```
 
 Requires Node 20+.
+
+### Running the app
+
+```sh
+cp apps/mobile/.env.example apps/mobile/.env   # fill in the Supabase anon key
+npm run web -w @hfn/mobile                     # or: npx expo start (in apps/mobile) for iOS/Android
+```
+
+Use a non-production Supabase project for development and testing.
+
+### End-to-end tests
+
+CI builds the web app against a throwaway local Supabase stack and runs Playwright
+(`e2e/`). Locally, with Docker:
+
+```sh
+npx supabase start
+# put API_URL / ANON_KEY from `npx supabase status` into EXPO_PUBLIC_* and export:
+npm run export:web -w @hfn/mobile
+npm run test:e2e
+```
+
+Native behaviour (auth redirects, backgrounding, camera) is covered by
+[`docs/native-smoke-checklist.md`](docs/native-smoke-checklist.md).
 
 ### Database tests
 

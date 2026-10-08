@@ -5,7 +5,7 @@
  * (data-driven) adjustments are deliberately not implemented here.
  */
 
-import { daysBetween } from "./dates";
+import { ageOn, daysBetween } from "./dates";
 
 export type BiologicalSex = "male" | "female";
 
@@ -171,4 +171,57 @@ export function estimateTargets(input: {
   const carbsG = Math.max(0, Math.round(remainingKcal / 4));
 
   return { bmr: Math.round(bmr), tdee: Math.round(maintenance), kcal, proteinG, fatG, carbsG, warnings };
+}
+
+export interface TargetProfile {
+  sex: BiologicalSex | null;
+  birthDate: string | null;
+  heightCm: number | null;
+  activity: ActivityLevel | null;
+  calorieFloorKcal?: number;
+}
+
+export type TargetProposal =
+  | { ok: true; plan: GoalPlan; estimate: TargetEstimate; ageYears: number }
+  | { ok: false; error: "PROFILE_INCOMPLETE"; missing: (keyof TargetProfile)[] }
+  | { ok: false; error: "NO_CURRENT_WEIGHT" | GoalPlanError };
+
+/**
+ * Combine a profile, the latest weight and a goal into a goal plan plus an
+ * initial target estimate. The estimate uses the user's chosen rate; any
+ * guardrail warnings are returned for the UI to present, not applied silently.
+ */
+export function proposeTargets(input: {
+  profile: TargetProfile;
+  currentWeightKg: number | null;
+  goalWeightKg: number;
+  mode: GoalMode;
+  today: string;
+}): TargetProposal {
+  const { profile } = input;
+  const missing = (["sex", "birthDate", "heightCm", "activity"] as const).filter((k) => profile[k] == null);
+  if (missing.length > 0) return { ok: false, error: "PROFILE_INCOMPLETE", missing: [...missing] };
+  if (input.currentWeightKg == null) return { ok: false, error: "NO_CURRENT_WEIGHT" };
+
+  const ageYears = ageOn(profile.birthDate!, input.today);
+  if (ageYears === null || ageYears < 0) return { ok: false, error: "INVALID_INPUT" };
+
+  const plan = planGoal({
+    currentWeightKg: input.currentWeightKg,
+    goalWeightKg: input.goalWeightKg,
+    today: input.today,
+    mode: input.mode,
+  });
+  if (!plan.ok) return plan;
+
+  const estimate = estimateTargets({
+    sex: profile.sex!,
+    ageYears,
+    heightCm: profile.heightCm!,
+    weightKg: input.currentWeightKg,
+    activity: profile.activity!,
+    kgPerWeek: plan.kgPerWeek,
+    calorieFloorKcal: profile.calorieFloorKcal,
+  });
+  return { ok: true, plan, estimate, ageYears };
 }
