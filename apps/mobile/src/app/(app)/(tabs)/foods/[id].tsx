@@ -118,6 +118,9 @@ export default function FoodDetail() {
           <Muted>Servings: {f.food_servings.map((s) => `${s.label} = ${s.grams ?? s.ml} ${s.grams != null ? "g" : "ml"}`).join(", ")}</Muted>
         ) : null}
         {f.density_g_per_ml != null ? <Muted>Density: {f.density_g_per_ml} g/ml</Muted> : null}
+        {f.source === "usda" ? (
+          <Muted>Source: U.S. Department of Agriculture, FoodData Central (FDC ID {f.source_id}). Values not reported by USDA show as unknown.</Muted>
+        ) : null}
         {isMine ? (
           <Button title="Edit food" variant="secondary" onPress={() => router.push({ pathname: "/foods/edit", params: { id: f.id } })} />
         ) : null}
