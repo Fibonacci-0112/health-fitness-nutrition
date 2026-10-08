@@ -18,6 +18,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Edge Functions
+        run: deno check supabase/functions/usda-search/index.ts
 
   database:
     runs-on: ubuntu-latest
@@ -45,8 +50,12 @@ jobs:
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,realtime,storage-api
       - name: Build the web app against the local stack
         run: |
-          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY)=')"
+          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
           EXPO_PUBLIC_SUPABASE_URL="$API_URL" EXPO_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY" npm run export:web -w @hfn/mobile
+          # The USDA journey seeds the local catalog with the local service-role key.
+          echo "E2E_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "E2E_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4

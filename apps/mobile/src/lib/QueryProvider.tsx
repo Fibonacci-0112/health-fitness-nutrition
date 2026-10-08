@@ -46,7 +46,13 @@ export function QueryProvider({ userId, children }: { userId: string | null; chi
   return (
     <PersistQueryClientProvider
       client={client}
-      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: "r1" }}
+      persistOptions={{
+        persister,
+        maxAge: 24 * 60 * 60 * 1000,
+        buster: "r1",
+        // Queries can opt out of the offline cache with meta: { persist: false }.
+        dehydrateOptions: { shouldDehydrateQuery: (q) => q.state.status === "success" && q.meta?.persist !== false },
+      }}
     >
       {children}
     </PersistQueryClientProvider>

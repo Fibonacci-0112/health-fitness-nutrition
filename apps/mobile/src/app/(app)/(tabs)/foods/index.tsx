@@ -18,7 +18,8 @@ export default function Foods() {
     <Screen>
       <Title>My foods</Title>
       <Muted>Foods you create are private to you, and so are the prices you record for any food.</Muted>
-      <Button title="New food" onPress={() => router.push("/foods/edit")} />
+      <Button title="Search USDA foods" onPress={() => router.push("/foods/search")} />
+      <Button title="New food" variant="secondary" onPress={() => router.push("/foods/edit")} />
       {foods.isError ? <Banner tone="error">Couldn't load your foods. Check your connection.</Banner> : null}
       {foods.data && foods.data.length > 0 ? (
         <Field label="Search my foods" value={query} onChangeText={setQuery} autoCapitalize="none" />

@@ -9,6 +9,7 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the product plan, data contracts and rele
 |---|---|
 | `packages/core` | Pure TypeScript domain logic shared by every platform: quantity/unit resolution, nutrient totals, estimated consumption cost, calorie/macro target estimates, input schemas |
 | `apps/mobile` | Expo app (iOS, Android, web): sign-in, onboarding, targets, Today, custom foods and prices |
+| `supabase/functions/usda-search` | Edge Function: USDA FoodData Central search and import into the shared catalog |
 | `supabase/migrations` | Postgres schema with row-level security (ownership model in `docs/PLAN.md` §4) |
 | `supabase/tests/database` | pgTAP tests for access rules and data integrity |
 
@@ -48,6 +49,18 @@ npm run test:e2e
 
 Native behaviour (auth redirects, backgrounding, camera) is covered by
 [`docs/native-smoke-checklist.md`](docs/native-smoke-checklist.md).
+
+### USDA food search (Edge Function)
+
+The `usda-search` function keeps the USDA FoodData Central API key on the server:
+
+```sh
+npx supabase secrets set USDA_API_KEY=<your key> --project-ref <project ref>
+npx supabase functions deploy usda-search --project-ref <project ref>
+```
+
+Food data: U.S. Department of Agriculture, FoodData Central (public domain, CC0). The app shows this
+attribution on search results and on USDA foods.
 
 ### Database tests
 
