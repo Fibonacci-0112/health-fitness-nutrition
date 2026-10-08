@@ -426,3 +426,17 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Node / Expo
+node_modules/
+.env
+.env.*
+!.env.example
+coverage/
+dist/
+.expo/
+web-build/
+# This repo's npm workspaces live in packages/ (not NuGet packages).
+!/packages/
+!/packages/**
+packages/**/node_modules/
