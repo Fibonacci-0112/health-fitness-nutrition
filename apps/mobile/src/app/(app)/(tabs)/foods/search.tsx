@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useImportUsdaFood, useUsdaSearch, type UsdaSearchItem } from "../../../../api/usda";
@@ -6,6 +6,7 @@ import { saveErrorMessage } from "../../../../lib/format";
 import { Banner, Button, Field, Loading, Muted, Screen, Title, colors } from "../../../../ui";
 
 export default function UsdaSearch() {
+  const { logDate, meal } = useLocalSearchParams<{ logDate?: string; meal?: string }>();
   const [text, setText] = useState("");
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
@@ -24,7 +25,7 @@ export default function UsdaSearch() {
     setImporting(item.fdcId);
     try {
       const id = await importFood.mutateAsync(item.fdcId);
-      router.push({ pathname: "/foods/[id]", params: { id } });
+      router.push({ pathname: "/foods/[id]", params: { id, ...(logDate ? { logDate, meal: meal ?? "" } : {}) } });
     } catch (e) {
       setImportError(saveErrorMessage(e));
     } finally {

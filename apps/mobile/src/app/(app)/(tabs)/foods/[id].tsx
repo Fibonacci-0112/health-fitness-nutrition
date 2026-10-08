@@ -1,9 +1,11 @@
-import { NUTRIENT_KEYS, formatMoney, isIsoDate, minorUnitDigits, priceSchema, selectPrice, toMinorUnits } from "@hfn/core";
+import { MEAL_SLOTS, NUTRIENT_KEYS, formatMoney, isIsoDate, minorUnitDigits, priceSchema, selectPrice, toMinorUnits } from "@hfn/core";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useAddPrice, useDeleteFood, useDeletePrice, useFood, useFoodPrices } from "../../../../api/foods";
 import { useProfile } from "../../../../api/profile";
+import { LogFoodCard } from "../../../../diary/LogFoodCard";
+import { mealForHour } from "../../../../lib/diary";
 import {
   NUTRIENT_COLUMNS,
   NUTRIENT_LABELS,
@@ -18,7 +20,7 @@ import { Banner, Button, Card, Choice, Field, Label, Loading, Muted, Screen, Tit
 type PackageUnit = "g" | "ml" | "serving";
 
 export default function FoodDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, logDate, meal } = useLocalSearchParams<{ id: string; logDate?: string; meal?: string }>();
   const profile = useProfile().data!;
   const food = useFood(id);
   const prices = useFoodPrices(id);
@@ -84,6 +86,12 @@ export default function FoodDetail() {
     }
   }
 
+  // Opened from Today's "Add to …": after logging, return to the diary and reset the Foods stack.
+  function backToDiary() {
+    router.dismissAll();
+    router.navigate("/");
+  }
+
   async function removeFood() {
     try {
       await deleteFood.mutateAsync(f.id);
@@ -125,6 +133,16 @@ export default function FoodDetail() {
           <Button title="Edit food" variant="secondary" onPress={() => router.push({ pathname: "/foods/edit", params: { id: f.id } })} />
         ) : null}
       </Card>
+
+      <LogFoodCard
+        key={f.id}
+        food={f}
+        prices={prices.data ?? []}
+        profile={profile}
+        initialDate={logDate && isIsoDate(logDate) ? logDate : todayDate}
+        initialMeal={MEAL_SLOTS.find((m) => m === meal) ?? mealForHour(new Date().getHours())}
+        onLogged={logDate ? backToDiary : undefined}
+      />
 
       <Card>
         <Label>Price</Label>

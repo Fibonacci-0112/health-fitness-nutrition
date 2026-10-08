@@ -3,7 +3,7 @@
 -- and reference B's private records. Everything here is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(53);
+select plan(56);
 
 -- Runs a statement and returns the number of rows it affected (RLS filters
 -- UPDATE/DELETE silently, so "0 rows" is the expected denial).
@@ -167,6 +167,22 @@ select is((select user_id from public.food_logs where id = 'aaaaaaaa-0000-0000-0
 select throws_ok(
   $$update public.food_logs set user_id = '00000000-0000-0000-0000-00000000000b' where id = 'aaaaaaaa-0000-0000-0000-000000000004'$$,
   '42501', null, 'A cannot hand a log over to B');
+-- The app saves log entries as upsert-on-id, so a retried save can't duplicate them.
+select lives_ok(
+  $$insert into public.food_logs (id, log_date, meal_slot, food_id, amount, unit, serving_id, food_name, serving_label,
+                                  energy_kcal, cost_status)
+    values ('aaaaaaaa-0000-0000-0000-000000000004', '2026-10-08', 'breakfast', 'aaaaaaaa-0000-0000-0000-000000000001',
+            1, 'serving', 'aaaaaaaa-0000-0000-0000-000000000003', 'A protein bar', 'half bar', 105, 'no_price')
+    on conflict (id) do update set amount = excluded.amount$$,
+  'A can retry saving the same log entry');
+select is((select count(*) from public.food_logs where id = 'aaaaaaaa-0000-0000-0000-000000000004'), 1::bigint,
+  'the retried save did not duplicate the entry');
+select throws_ok(
+  $$insert into public.food_logs (id, log_date, meal_slot, food_id, amount, unit, food_name, cost_status)
+    values ('bbbbbbbb-0000-0000-0000-000000000004', '2026-10-08', 'lunch', '11111111-0000-0000-0000-000000000001',
+            100, 'g', 'Oats, rolled', 'no_price')
+    on conflict (id) do update set amount = excluded.amount$$,
+  '42501', null, 'A cannot overwrite B''s log by upserting its id');
 select throws_ok(
   $$delete from public.food_servings where id = 'aaaaaaaa-0000-0000-0000-000000000002'$$,
   '23503', null, 'the basis serving of a per-serving food cannot be deleted');

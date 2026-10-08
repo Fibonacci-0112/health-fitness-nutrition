@@ -117,6 +117,7 @@ export function Choice<T extends string>({
               key={o.value}
               accessibilityRole="radio"
               accessibilityState={{ selected }}
+              aria-checked={selected}
               accessibilityLabel={o.label}
               onPress={() => onChange(o.value)}
               style={[styles.choice, selected ? styles.choiceSelected : null]}

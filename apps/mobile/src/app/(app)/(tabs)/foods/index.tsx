@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useMyFoods } from "../../../../api/foods";
@@ -7,6 +7,9 @@ import { Banner, Button, Card, Field, Loading, Muted, Screen, Title, colors } fr
 
 export default function Foods() {
   const foods = useMyFoods();
+  // Set when arriving from Today's "Add to …": passed on so the food opens ready to log there.
+  const { logDate, meal } = useLocalSearchParams<{ logDate?: string; meal?: string }>();
+  const logTarget = logDate ? { logDate, meal: meal ?? "" } : {};
   const [query, setQuery] = useState("");
 
   if (foods.isPending) return <Loading />;
@@ -18,7 +21,7 @@ export default function Foods() {
     <Screen>
       <Title>My foods</Title>
       <Muted>Foods you create are private to you, and so are the prices you record for any food.</Muted>
-      <Button title="Search USDA foods" onPress={() => router.push("/foods/search")} />
+      <Button title="Search USDA foods" onPress={() => router.push({ pathname: "/foods/search", params: logTarget })} />
       <Button title="New food" variant="secondary" onPress={() => router.push("/foods/edit")} />
       {foods.isError ? <Banner tone="error">Couldn't load your foods. Check your connection.</Banner> : null}
       {foods.data && foods.data.length > 0 ? (
@@ -34,7 +37,7 @@ export default function Foods() {
           key={f.id}
           accessibilityRole="link"
           accessibilityLabel={f.name}
-          onPress={() => router.push({ pathname: "/foods/[id]", params: { id: f.id } })}
+          onPress={() => router.push({ pathname: "/foods/[id]", params: { id: f.id, ...logTarget } })}
           style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
         >
           <View style={styles.rowText}>
