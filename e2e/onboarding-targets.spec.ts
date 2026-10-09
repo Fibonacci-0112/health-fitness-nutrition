@@ -41,7 +41,7 @@ test("sign up, onboard, set targets, and keep accounts isolated", async ({ page 
   await expect(page.getByText("Set manually · since", { exact: false })).toBeVisible();
 
   await page.getByRole("tab", { name: "Today" }).click();
-  await expect(page.getByText("2100 kcal", { exact: true })).toBeVisible();
+  await expect(page.getByText("of 2100 kcal target")).toBeVisible();
 
   // Sign out removes this user's persisted query cache.
   await signOut(page);
@@ -56,5 +56,5 @@ test("sign up, onboard, set targets, and keep accounts isolated", async ({ page 
 
   // A's data is still there for A.
   await signIn(page, userA);
-  await expect(page.getByText("2100 kcal", { exact: true })).toBeVisible();
+  await expect(page.getByText("of 2100 kcal target")).toBeVisible();
 });
