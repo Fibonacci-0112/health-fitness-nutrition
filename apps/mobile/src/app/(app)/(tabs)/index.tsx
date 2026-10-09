@@ -2,7 +2,7 @@ import { MEAL_SLOTS, summarizeDay, type MealSlot } from "@hfn/core";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useDeleteLog, useDiaryDay } from "../../../api/diary";
+import { useDayStatus, useDeleteLog, useDiaryDay, useSetDayComplete } from "../../../api/diary";
 import { useProfile } from "../../../api/profile";
 import { useTargetOn } from "../../../api/targets";
 import { useLatestWeight, useSaveWeight } from "../../../api/weights";
@@ -18,6 +18,8 @@ export default function Today() {
   const target = useTargetOn(date);
   const diary = useDiaryDay(date);
   const deleteLog = useDeleteLog();
+  const dayStatus = useDayStatus(date);
+  const setDayComplete = useSetDayComplete();
   const latestWeight = useLatestWeight();
   const saveWeight = useSaveWeight();
 
@@ -53,6 +55,15 @@ export default function Today() {
     setDiaryError(null);
     try {
       await deleteLog.mutateAsync(row);
+    } catch (e) {
+      setDiaryError(saveErrorMessage(e));
+    }
+  }
+
+  async function markComplete(complete: boolean) {
+    setDiaryError(null);
+    try {
+      await setDayComplete.mutateAsync({ date, complete });
     } catch (e) {
       setDiaryError(saveErrorMessage(e));
     }
@@ -132,6 +143,32 @@ export default function Today() {
               </Card>
             );
           })}
+
+          <Card>
+            <Label>Day status</Label>
+            {dayStatus.data?.status === "complete" ? (
+              <>
+                <Muted>Marked complete: everything you ate on {date} is logged.</Muted>
+                <Button
+                  title="Mark as not complete"
+                  variant="secondary"
+                  onPress={() => markComplete(false)}
+                  loading={setDayComplete.isPending}
+                />
+              </>
+            ) : (
+              <>
+                <Muted>Mark the day complete once everything you ate is logged. Unmarked days are never counted as eating nothing.</Muted>
+                <Button
+                  title="Mark day complete"
+                  variant="secondary"
+                  onPress={() => markComplete(true)}
+                  disabled={dayStatus.isPending || dayStatus.isError}
+                  loading={setDayComplete.isPending}
+                />
+              </>
+            )}
+          </Card>
         </>
       )}
 
@@ -154,6 +191,9 @@ export default function Today() {
         />
         {weightError ? <Banner tone="error">{weightError}</Banner> : null}
         <Button title="Log weight" onPress={logWeight} disabled={!weightValid} loading={saveWeight.isPending} />
+        <Link href="/weight" style={styles.link}>
+          Weight history
+        </Link>
       </Card>
     </Screen>
   );

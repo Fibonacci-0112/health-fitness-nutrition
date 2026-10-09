@@ -3,7 +3,7 @@
 -- and reference B's private records. Everything here is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(56);
+select plan(60);
 
 -- Runs a statement and returns the number of rows it affected (RLS filters
 -- UPDATE/DELETE silently, so "0 rows" is the expected denial).
@@ -95,6 +95,14 @@ select is(public._test_rowcount($$delete from public.food_prices where id = 'bbb
 select is(public._test_rowcount($$update public.food_logs set amount = 1 where id = 'bbbbbbbb-0000-0000-0000-000000000004'$$), 0::bigint, 'A cannot update B''s log');
 select is(public._test_rowcount($$delete from public.food_logs where id = 'bbbbbbbb-0000-0000-0000-000000000004'$$), 0::bigint, 'A cannot delete B''s log');
 select is(public._test_rowcount($$update public.body_weights set weight_kg = 50 where id = 'bbbbbbbb-0000-0000-0000-000000000005'$$), 0::bigint, 'A cannot update B''s weight');
+select is(public._test_rowcount($$delete from public.body_weights where id = 'bbbbbbbb-0000-0000-0000-000000000005'$$), 0::bigint, 'A cannot delete B''s weight');
+select is(public._test_rowcount($$update public.diary_days set status = 'partial' where log_date = '2026-10-08'$$), 0::bigint, 'A cannot update B''s diary day');
+select is(public._test_rowcount($$delete from public.diary_days where log_date = '2026-10-08'$$), 0::bigint, 'A cannot delete B''s diary day');
+-- The app marks a day complete as an upsert on (user_id, log_date); B's row for the same date is untouched.
+select lives_ok(
+  $$insert into public.diary_days (log_date, status) values ('2026-10-08', 'complete')
+    on conflict (user_id, log_date) do update set status = excluded.status$$,
+  'A can mark a date complete that B also has');
 select is(public._test_rowcount($$delete from public.targets$$), 0::bigint, 'A cannot delete B''s targets');
 select is(public._test_rowcount($$update public.profiles set currency = 'JPY' where user_id = '00000000-0000-0000-0000-00000000000b'$$), 0::bigint, 'A cannot update B''s profile');
 
