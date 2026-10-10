@@ -16,16 +16,19 @@ let userDataDir: string;
 const appDir = path.resolve(__dirname, "..");
 const env = () => ({ ...process.env, HFN_USER_DATA_DIR: userDataDir }) as Record<string, string>;
 
+// Ubuntu 24.04 runners block the unprivileged user namespaces Chromium's sandbox needs, and root
+// containers refuse to start with it, so the smoke tests run Electron unsandboxed on Linux.
+const sandbox = process.platform === "linux" ? ["--no-sandbox"] : [];
+
 function launch(): Promise<ElectronApplication> {
-  return executablePath ? electron.launch({ executablePath, args: [], env: env() }) : electron.launch({ args: [appDir], env: env() });
+  return executablePath
+    ? electron.launch({ executablePath, args: sandbox, env: env() })
+    : electron.launch({ args: [...sandbox, appDir], env: env() });
 }
 
 /** Starts a second instance with a deep link, the way Windows does when an hfn: link is opened. */
 function openDeepLink(link: string) {
   const electronBinary = createRequire(__filename)("electron") as unknown as string;
-  // Playwright disables Chromium's sandbox for launch(); match it on Linux, where root containers and
-  // Ubuntu's AppArmor user-namespace rules otherwise stop the second instance from starting.
-  const sandbox = process.platform === "linux" ? ["--no-sandbox"] : [];
   const [command, args] = executablePath ? [executablePath, [...sandbox, link]] : [electronBinary, [...sandbox, appDir, link]];
   const result = spawnSync(command, args, { env: env(), timeout: 30_000 });
   expect(result.status, result.stderr?.toString()).toBe(0);
