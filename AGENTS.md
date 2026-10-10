@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository. Read [`docs/PLAN.md`](docs/PLAN.md) before any non-trivial change. It is the source of truth for scope, data contracts and the release roadmap. `ROADMAP.md` is currently a copy of it.
+Guidance for AI coding agents working in this repository. Read [`docs/PLAN.md`](docs/PLAN.md) before any non-trivial change. It is the source of truth for scope, data contracts and the release roadmap.
 
 ## Project
 
@@ -10,6 +10,7 @@ An app to plan and track a body transformation: targets, a food diary with estim
 |---|---|
 | `packages/core` (`@hfn/core`) | Pure TypeScript domain logic: quantity/unit resolution, nutrient totals, estimated cost, diary snapshots, target estimates, zod schemas. No React, Supabase or platform code. |
 | `apps/mobile` (`@hfn/mobile`) | Expo + Expo Router app for iOS, Android and web. See [`apps/mobile/AGENTS.md`](apps/mobile/AGENTS.md) for Expo-specific rules. |
+| `apps/desktop` (`@hfn/desktop`) | Electron shell over the Expo web export, packaged as AppX for the Microsoft Store. Spike stage: see [`docs/decisions/0001-windows-desktop-packaging.md`](docs/decisions/0001-windows-desktop-packaging.md). |
 | `supabase/migrations` | Postgres schema, RLS policies and RPC functions |
 | `supabase/tests/database` | pgTAP tests |
 | `supabase/functions/usda-search` | Deno Edge Function: USDA FoodData Central search and import into the shared catalog |

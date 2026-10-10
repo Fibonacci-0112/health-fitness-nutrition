@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -p packages/core --noEmit && tsc -p apps/mobile --noEmit",
+    "typecheck": "tsc -p packages/core --noEmit && tsc -p apps/mobile --noEmit && tsc -p apps/desktop --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
