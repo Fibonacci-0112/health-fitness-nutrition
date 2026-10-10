@@ -24,7 +24,7 @@ npm run lint
 npm test
 ```
 
-Requires Node 20+.
+Requires Node 22.12+ (Electron 44 in `apps/desktop` needs it).
 
 ### Running the app
 

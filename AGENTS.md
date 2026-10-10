@@ -17,7 +17,7 @@ An app to plan and track a body transformation: targets, a food diary with estim
 | `e2e/` | Playwright tests against the web export and a local Supabase stack |
 | `scripts/` | `db-test-local.sh` runs the pgTAP tests without Docker |
 
-This is an npm workspaces monorepo. Node 20+ is required, and CI uses Node 22.
+This is an npm workspaces monorepo. Node 22.12+ is required (Electron 44 needs it), and CI uses Node 22.
 
 ## Commands
 
@@ -25,7 +25,7 @@ Run these from the repo root. CI runs all of them, so run the relevant ones befo
 
 ```sh
 npm install
-npm run typecheck   # tsc for packages/core and apps/mobile
+npm run typecheck   # tsc for packages/core, apps/mobile and apps/desktop
 npm run lint        # eslint .
 npm test            # vitest: packages/*/test, apps/*/src/**/*.test.ts, supabase/functions/**/*.test.ts
 deno check supabase/functions/usda-search/index.ts   # Edge Function type check (needs Deno 2)
