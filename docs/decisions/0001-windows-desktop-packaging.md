@@ -1,6 +1,6 @@
 # 0001: Windows desktop packaging for the Microsoft Store
 
-- **Status:** Proposed. Waiting on the first green `desktop-windows` CI run and the real Partner Center identity values.
+- **Status:** Accepted for the spike. The `desktop-windows` CI job is green; Store submission still needs the real Partner Center identity values (see below).
 - **Date:** 2026-10-10
 - **Scope:** the "Windows spike" in [`docs/PLAN.md`](../PLAN.md) (Platform validation)
 
@@ -57,12 +57,12 @@ We rejected the loopback redirect (`http://127.0.0.1:<port>/callback`) for the s
 | Check | Where | Result |
 |---|---|---|
 | Routing rules (asset vs. route fallback, traversal, other hosts, deep-link mapping) | Vitest, `apps/desktop/src/routing.test.ts` | Passing |
-| Shell serves the export at `app://hfn`, a client route survives navigation, a missing asset is a 404 | Playwright `_electron`, dev build and packaged (unpacked) Linux build | Passing locally |
-| A second instance launched with `hfn://sign-in?…#…` routes the running window, query and hash intact, still one window | Same | Passing locally |
-| Sign-up from the `app://hfn` origin against Supabase (CORS + auth), then the session survives an app restart | Same, against a local Supabase stack. Also runs in the CI `e2e` job | Passing locally |
-| `.appx` builds, and its manifest has the `hfn` protocol and full-trust entry point | CI `desktop-windows` (`windows-latest`) | Pending first run |
-| Packaged `win-unpacked/HFN.exe` passes the same smoke tests | CI `desktop-windows` | Pending first run |
-| A test-signed copy installs with `Add-AppxPackage`, and opening `hfn://sign-in` starts the packaged app | CI `desktop-windows` | Pending first run |
+| Shell serves the export at `app://hfn`, a client route survives navigation, a missing asset is a 404 | Playwright `_electron`, dev build and packaged (unpacked) Linux build | Passing locally and in CI |
+| A second instance launched with `hfn://sign-in?…#…` routes the running window, query and hash intact, still one window | Same | Passing locally and in CI |
+| Sign-up from the `app://hfn` origin against Supabase (CORS + auth), then the session survives an app restart | Same, against a local Supabase stack. Also runs in the CI `e2e` job | Passing locally and in CI |
+| `.appx` builds, and its manifest has the `hfn` protocol and full-trust entry point | CI `desktop-windows` (`windows-latest`) | Passing |
+| Packaged `win-unpacked/HFN.exe` passes the same smoke tests | CI `desktop-windows` | Passing |
+| A test-signed copy installs with `Add-AppxPackage`, and opening `hfn://sign-in` starts the packaged app | CI `desktop-windows` | Passing |
 
 Hosted Supabase answers CORS the same way as the local stack (its API gateway allows any origin), but check it once against the dev project before submission.
 
