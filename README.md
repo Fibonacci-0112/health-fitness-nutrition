@@ -9,11 +9,11 @@ See [`docs/PLAN.md`](docs/PLAN.md) for the product plan, data contracts and rele
 |---|---|
 | `packages/core` | Pure TypeScript domain logic shared by every platform: quantity/unit resolution, nutrient totals, estimated consumption cost, diary snapshots, calorie/macro target estimates, input schemas |
 | `apps/mobile` | Expo app (iOS, Android, web): sign-in, onboarding, targets, custom foods and prices, food diary with estimated food cost, Today, weight history |
+| `apps/desktop` | Electron shell over the web export for Windows, packaged as `.appx` for the Microsoft Store (spike) |
 | `supabase/functions/usda-search` | Edge Function: USDA FoodData Central search and import into the shared catalog |
 | `supabase/migrations` | Postgres schema with row-level security (ownership model in `docs/PLAN.md` §4) |
 | `supabase/tests/database` | pgTAP tests for access rules and data integrity |
 
-The Electron shell arrives in a later PR (see the plan).
 
 ## Development
 
@@ -24,7 +24,7 @@ npm run lint
 npm test
 ```
 
-Requires Node 20+.
+Requires Node 22.12+ (Electron 44 in `apps/desktop` needs it).
 
 ### Running the app
 
@@ -49,6 +49,22 @@ npm run test:e2e
 
 Native behaviour (auth redirects, backgrounding, camera) is covered by
 [`docs/native-smoke-checklist.md`](docs/native-smoke-checklist.md).
+
+### Windows desktop shell
+
+`apps/desktop` wraps the web export in Electron and packages it as `.appx` for the
+Microsoft Store. Why `.appx`, and how pages and auth links are served, is in
+[`docs/decisions/0001-windows-desktop-packaging.md`](docs/decisions/0001-windows-desktop-packaging.md).
+
+```sh
+npm run export:web -w @hfn/mobile                   # the shell loads apps/mobile/dist
+npm start -w @hfn/desktop                           # run it (any OS)
+xvfb-run -a npm run test:smoke -w @hfn/desktop      # Playwright smoke tests (drop xvfb-run off Linux)
+npm run dist:win -w @hfn/desktop                    # build the .appx (Windows only)
+```
+
+CI builds the package on `windows-latest`, smoke-tests it, installs a test-signed copy and
+opens an `hfn://` link to check protocol activation.
 
 ### USDA food search (Edge Function)
 

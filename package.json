@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "scripts": {
-    "typecheck": "tsc -p packages/core --noEmit && tsc -p apps/mobile --noEmit",
+    "typecheck": "tsc -p packages/core --noEmit && tsc -p apps/mobile --noEmit && tsc -p apps/desktop --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -14,7 +14,7 @@
     "test:e2e": "playwright test"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
