@@ -64,7 +64,7 @@ These rules are summarized from `docs/PLAN.md`. Follow them in core logic, SQL a
 
 ## Security and database rules
 
-- `foods` / `food_servings` with `owner_id is null` form the **shared catalog**. Only the service role writes these rows, inside the `usda-search` Edge Function. Users write only their own rows.
+- `foods` rows with `owner_id is null`, together with their related `food_servings`, form the **shared catalog**. Only the service role writes these rows, inside the `usda-search` Edge Function. Users write only their own rows.
 - `food_prices`, `food_logs`, `profiles`, `targets`, `body_weights` and `diary_days` are private to their owner. Every new table needs RLS enabled, owner policies, and pgTAP tests for cross-user SELECT/INSERT/UPDATE/DELETE (follow `supabase/tests/database/rls.test.sql`).
 - Visibility and ownership checks for related records go through the `security definer` helpers in the `private` schema (`private.can_see_food`, `private.owns_food`, `private.owns_price`), which are not exposed over the REST API. Any view must use `security_invoker = true`. Functions set `search_path = ''`.
 - Prefer `security invoker` RPCs (for example `save_custom_food`) for multi-row writes so RLS still applies.
