@@ -34,7 +34,7 @@ export function useWeights() {
         .from("body_weights")
         .select("*")
         .order("measured_on", { ascending: false })
-        .limit(WEIGHT_HISTORY_LIMIT);
+        .limit(WEIGHT_HISTORY_LIMIT + 1);
       if (error) throw error;
       return data;
     },

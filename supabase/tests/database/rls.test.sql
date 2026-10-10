@@ -3,7 +3,7 @@
 -- and reference B's private records. Everything here is rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(60);
+select plan(63);
 
 -- Runs a statement and returns the number of rows it affected (RLS filters
 -- UPDATE/DELETE silently, so "0 rows" is the expected denial).
@@ -229,6 +229,12 @@ select lives_ok(
 -- Back as the owner: B's data is untouched
 -- ---------------------------------------------------------------------------
 reset role;
+select is((select count(*) from public.diary_days where user_id = '00000000-0000-0000-0000-00000000000a' and log_date = '2026-10-08'),
+  1::bigint, 'A''s same-date upsert created A''s row');
+select is((select count(*) from public.diary_days where user_id = '00000000-0000-0000-0000-00000000000b' and log_date = '2026-10-08'),
+  1::bigint, 'B''s same-date diary row remains');
+select is((select status from public.diary_days where user_id = '00000000-0000-0000-0000-00000000000b' and log_date = '2026-10-08'),
+  'complete', 'B''s diary status is unchanged');
 select is((select name from public.foods where id = 'bbbbbbbb-0000-0000-0000-000000000001'), 'B secret stew', 'B''s food is unchanged');
 select is((select price_minor from public.food_prices where id = 'bbbbbbbb-0000-0000-0000-000000000003'), 800::bigint, 'B''s price is unchanged');
 
