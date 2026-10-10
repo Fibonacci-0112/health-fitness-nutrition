@@ -26,6 +26,7 @@ export default function Weight() {
   const weightKg = parsed === null ? null : toKg(parsed, units);
   const valid = !dateError && weightKg !== null && weightKg >= 20 && weightKg <= 500;
   const list = weights.data ?? [];
+  const displayedList = list.slice(0, WEIGHT_HISTORY_LIMIT);
 
   async function save() {
     if (!valid) return;
@@ -70,7 +71,7 @@ export default function Weight() {
         <Label>History</Label>
         {weights.isError ? <Banner tone="error">Couldn't load your weigh-ins. Check your connection.</Banner> : null}
         {list.length === 0 && !weights.isError ? <Muted>No weigh-ins yet.</Muted> : null}
-        {list.map((w, i) => {
+        {displayedList.map((w, i) => {
           const previous = list[i + 1];
           const change = previous ? displayWeight(w.weight_kg, units) - displayWeight(previous.weight_kg, units) : null;
           const label = `${displayWeight(w.weight_kg, units)} ${wUnit} on ${w.measured_on}`;
@@ -88,7 +89,7 @@ export default function Weight() {
             </View>
           );
         })}
-        {list.length === WEIGHT_HISTORY_LIMIT ? <Muted>Showing your latest {WEIGHT_HISTORY_LIMIT} weigh-ins.</Muted> : null}
+        {list.length > WEIGHT_HISTORY_LIMIT ? <Muted>Showing your latest {WEIGHT_HISTORY_LIMIT} weigh-ins.</Muted> : null}
       </Card>
     </Screen>
   );

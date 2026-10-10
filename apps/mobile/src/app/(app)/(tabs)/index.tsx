@@ -146,7 +146,12 @@ export default function Today() {
 
           <Card>
             <Label>Day status</Label>
-            {dayStatus.data?.status === "complete" ? (
+            {dayStatus.isError ? (
+              <>
+                <Banner tone="error">Couldn't load this day's status. Check your connection.</Banner>
+                <Button title="Try again" variant="secondary" onPress={() => dayStatus.refetch()} />
+              </>
+            ) : dayStatus.data?.status === "complete" ? (
               <>
                 <Muted>Marked complete: everything you ate on {date} is logged.</Muted>
                 <Button
@@ -163,7 +168,7 @@ export default function Today() {
                   title="Mark day complete"
                   variant="secondary"
                   onPress={() => markComplete(true)}
-                  disabled={dayStatus.isPending || dayStatus.isError}
+                  disabled={dayStatus.isPending || setDayComplete.isPending}
                   loading={setDayComplete.isPending}
                 />
               </>
