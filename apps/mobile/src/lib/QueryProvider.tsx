@@ -3,9 +3,7 @@ import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persi
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
-
-const CACHE_PREFIX = "hfn-query-cache:";
-export const cacheKey = (userId: string) => `${CACHE_PREFIX}${userId}`;
+import { cacheKey, userCacheStorage, wipeUserCache } from "./queryCache";
 
 /**
  * Query cache scoped to one signed-in user. A new user gets a fresh client and
@@ -27,7 +25,8 @@ export function QueryProvider({ userId, children }: { userId: string | null; chi
   );
 
   const persister = useMemo(
-    () => (userId ? createAsyncStoragePersister({ storage: AsyncStorage, key: cacheKey(userId) }) : null),
+    () =>
+      userId ? createAsyncStoragePersister({ storage: userCacheStorage(userId, AsyncStorage), key: cacheKey(userId) }) : null,
     [userId],
   );
 
@@ -35,7 +34,7 @@ export function QueryProvider({ userId, children }: { userId: string | null; chi
   useEffect(() => {
     const prev = previousUser.current;
     if (prev && prev !== userId) {
-      AsyncStorage.removeItem(cacheKey(prev)).catch(() => undefined);
+      wipeUserCache(prev, AsyncStorage).catch(() => undefined);
     }
     previousUser.current = userId;
   }, [userId]);

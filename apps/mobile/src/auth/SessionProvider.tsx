@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { cacheKey } from "../lib/QueryProvider";
+import { wipeUserCache } from "../lib/queryCache";
 import { supabase } from "../lib/supabase";
 
 interface SessionContextValue {
@@ -44,7 +44,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         const userId = session?.user.id;
         await supabase.auth.signOut();
         // Drop this user's persisted query cache so the next person on the device never sees it.
-        if (userId) await AsyncStorage.removeItem(cacheKey(userId)).catch(() => undefined);
+        // wipeUserCache also stops a throttled write that is still pending from restoring it.
+        if (userId) await wipeUserCache(userId, AsyncStorage).catch(() => undefined);
       },
     }),
     [session, isLoading],

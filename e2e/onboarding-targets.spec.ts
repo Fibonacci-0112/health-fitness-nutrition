@@ -43,10 +43,13 @@ test("sign up, onboard, set targets, and keep accounts isolated", async ({ page 
   await page.getByRole("tab", { name: "Today" }).click();
   await expect(page.getByText("of 2100 kcal target")).toBeVisible();
 
-  // Sign out removes this user's persisted query cache.
+  // Sign out removes this user's persisted query cache, and it stays gone after the persister's
+  // 1 s write throttle, so a write queued before sign-out can't bring it back.
   await signOut(page);
-  const cacheKeys = await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("hfn-query-cache:")));
-  expect(cacheKeys).toEqual([]);
+  const cacheKeys = () => page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("hfn-query-cache:")));
+  expect(await cacheKeys()).toEqual([]);
+  await page.waitForTimeout(1_500);
+  expect(await cacheKeys()).toEqual([]);
 
   // A second user starts from scratch and sees none of A's data.
   await signUp(page, unique());
